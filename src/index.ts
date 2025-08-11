@@ -119,10 +119,10 @@ let ride = {
 
 //type assertions
 //no type convertion happens here
-let phone = document.getElementById("phone") as HTMLInputElement;
-let phone2 = <HTMLInputElement>document.getElementById("phone");
+// let phone = document.getElementById("phone") as HTMLInputElement;
+// let phone2 = <HTMLInputElement>document.getElementById("phone");
 //HTMLElement - parent class for javascript
-let abc = phone.value;
+// let abc = phone.value;
 
 //unknown type
 function render(document: unknown) {
@@ -139,11 +139,162 @@ function render(document: unknown) {
 //the never type
 //we use this to tell the compiler that this function never returns
 
-function processEvents() : never{
+function processEvents(): never {
   while (true) {
     //read message from queue
   }
 }
 
-processEvents();
-console.log("Hello World");
+// processEvents();
+// console.log("Hello World");
+
+//objected oriented programming
+//readonly = set only in constructor
+class Account {
+  // readonly id: number;
+  // owner: string;
+  // private _balance: number;
+  nickname?: string; //optional property
+
+  constructor(
+    public readonly id: number,
+    public owner: string,
+    private _balance: number
+  ) {
+    // this.id = id;
+    // this.owner = owner;
+    // this._balance = balance;
+  }
+
+  deposit(amount: number): void {
+    if (amount <= 0) {
+      throw new Error("Invalid amount");
+    }
+    this._balance += amount;
+  }
+
+  private calculateTax() {}
+
+  get balance(): number {
+    return this._balance;
+  }
+
+  // set balace(value: number) {
+  //   if (value < 0) {
+  //     throw new Error("Ivalid value");
+  //   }
+  //   this._balance = value;
+  // }
+}
+
+let account = new Account(1, "Andrei", 0);
+account.deposit(10);
+console.log(typeof account);
+console.log(account instanceof Account);
+console.log(account.balance);
+
+//index signatures
+class SeatAssigment {
+  //index signature property
+  [seatNumber: string]: string;
+}
+let seats = new SeatAssigment();
+seats.A1 = "Andrei";
+seats.A2 = "Toma";
+seats["A3"] = "Mark";
+
+//static props
+class Ride {
+  private static _activeRides: number = 0;
+  start() {
+    Ride._activeRides++;
+  }
+  stop() {
+    Ride._activeRides--;
+  }
+  static get activeRides() {
+    return Ride._activeRides;
+  }
+}
+let ride1 = new Ride();
+let ride2 = new Ride();
+ride1.start();
+ride2.start();
+console.log("activeRides:");
+console.log(Ride.activeRides);
+console.log(Ride.activeRides);
+
+//inheritance
+class Person {
+  constructor(public fistName: string, public lastName: string) {}
+
+  get fullName() {
+    return this.fistName + " " + this.lastName;
+  }
+
+  //protected - should be avoided because it creates a lot of coupling in an application
+  protected walk() {
+    console.log("walk");
+  }
+}
+
+class Student extends Person {
+  constructor(public studentId: number, fistName: string, lastName: string) {
+    super(fistName, lastName);
+  }
+
+  takeTest() {
+    console.log("Taking a test");
+  }
+}
+
+//method overrinding
+class Teacher extends Person {
+  override get fullName() {
+    return "Teacher " + super.fullName;
+  }
+}
+
+let student = new Student(1, "Andrei", "Teodorescu");
+let teacher = new Teacher("Andrei", "aaaa");
+console.log(teacher.fullName);
+
+//polymorphism
+printNames([new Student(1, "John", "Smith"), new Teacher("John", "Coke")]);
+
+function printNames(people: Person[]) {
+  for (let person of people) console.log(person.fullName);
+}
+
+//abstract class
+abstract class Shape {
+  constructor(public color: string) {}
+  abstract render(): void;
+}
+
+class Circle extends Shape {
+  constructor(public radius: number, color: string) {
+    super(color);
+  }
+
+  override render(): void {
+    console.log("rendering a circle");
+  }
+}
+
+//interfaces
+interface Calendar {
+  name: string;
+  addEvent(): void;
+  removeEvent(): void;
+}
+
+class GoogleCalender implements Calendar {
+  constructor(public name: string) {}
+  addEvent(): void {
+    throw new Error("Method not implemented.");
+  }
+  removeEvent(): void {
+    throw new Error("Method not implemented.");
+  }
+}
