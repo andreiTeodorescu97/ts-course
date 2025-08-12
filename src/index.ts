@@ -322,7 +322,7 @@ interface Result<T> {
 }
 
 function fetch<T>(url: string): Result<T> {
-  return { data: null, error: null };
+  return { data: null, error: url };
 }
 
 interface User {
@@ -371,9 +371,9 @@ class CompressibleStore<T> extends Store<T> {
 
 //an object that contains a prop name, restrictive
 class SearchableStore<T extends { name: string }> extends Store<T> {
-  find(name: string): T | undefined {
-    return this._objects.find((o) => o.name === name);
-  }
+  // override find(name: string): T | undefined {
+  //   return this._objects.find((o) => o.name === name);
+  // }
 }
 
 //fix the generic type parameter
@@ -405,3 +405,124 @@ type OptionalObject<T> = {
 type NullableObject<T> = {
   [Property in keyof T]: T[Property] | null;
 };
+
+//decorators
+function Component(constructor: Function) {
+  console.log("Component decorator called");
+  constructor.prototype.uniqueId = Date.now();
+  constructor.prototype.insertInDom = () => {
+    console.log("Inserting the component in the DOM");
+  };
+}
+//decorator factory
+type ComponentOptions = {
+  selector: string;
+};
+function Component1(options: ComponentOptions) {
+  return (constructor: Function) => {
+    console.log("Component decorator called");
+    constructor.prototype.uniqueId = Date.now();
+    constructor.prototype.insertInDom = () => {
+      console.log("Inserting the component in the DOM");
+    };
+  };
+}
+
+function Pipe(constructor: Function) {
+  console.log("Pipe decorator called");
+  constructor.prototype.pipe = true;
+}
+
+@Component1({ selector: "#my-profile" })
+@Pipe
+class ProfileComponent {}
+
+//method decorator
+function Log(target: any, methodName: string, descriptor: PropertyDescriptor) {
+  const original = descriptor.value as Function;
+  descriptor.value = function (...args: any) {
+    console.log("Before");
+    original.call(this, ...args);
+    console.log("After");
+  };
+}
+
+class Car {
+  @Log
+  say(message: string) {
+    console.log("Car says " + message);
+  }
+}
+let car = new Car();
+car.say("hello");
+
+//accesor decorator
+function Capitalize(
+  target: any,
+  methodName: string,
+  descriptor: PropertyDescriptor
+) {
+  const original = descriptor.get;
+  descriptor.get = function () {
+    const result = original?.call(this);
+    if (typeof result === "string") {
+      return result.toUpperCase();
+    } else {
+      return result;
+    }
+  };
+}
+
+class Cat {
+  constructor(public firstName: string, public lastName: string) {}
+
+  @Capitalize
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  @Capitalize
+  get number() {
+    return 0;
+  }
+
+  @Capitalize
+  get null() {
+    return null;
+  }
+}
+
+let cat1 = new Cat("a", "b");
+console.log(cat1.fullName);
+console.log(cat1.number);
+console.log(cat1.null);
+
+//property decorator
+function MinLength(length: number) {
+  return (target: any, properyName: string) => {
+    let value: string;
+
+    const descriptor: PropertyDescriptor = {
+      get() {
+        return value;
+      },
+      set(newValue: string) {
+        if (newValue.length < length)
+          throw new Error(
+            `${properyName} should be at least ${length} characters long`
+          );
+        value = newValue;
+      },
+    };
+    Object.defineProperty(target, properyName, descriptor);
+  };
+}
+class Dog {
+  @MinLength(4)
+  password: string;
+  constructor(password: string) {
+    this.password = password;
+  }
+}
+let dog1 = new Dog("a");
+console.log(dog1.password);
