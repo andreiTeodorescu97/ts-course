@@ -195,7 +195,7 @@ console.log(account.balance);
 
 //index signatures
 class SeatAssigment {
-  //index signature property
+  //index signature property - to dynamically add properties to an object
   [seatNumber: string]: string;
 }
 let seats = new SeatAssigment();
@@ -298,3 +298,110 @@ class GoogleCalender implements Calendar {
     throw new Error("Method not implemented.");
   }
 }
+
+//generics
+class KeyValuePair<TKey, TValue> {
+  constructor(public key: TKey, public value: TValue) {}
+}
+
+let pair1 = new KeyValuePair<string, string>("1", "Andrei");
+let pair2 = new KeyValuePair<number, number>(1, 2);
+
+//generic methods
+class ArrayUtils {
+  static wrapInArray<T>(value: T) {
+    return [value];
+  }
+}
+let numbers12 = ArrayUtils.wrapInArray(1);
+
+//generic interfaces
+interface Result<T> {
+  data: T | null;
+  error: string | null;
+}
+
+function fetch<T>(url: string): Result<T> {
+  return { data: null, error: null };
+}
+
+interface User {
+  username: string;
+}
+
+interface Product {
+  title: string;
+}
+
+let r1 = fetch<User>("");
+r1.data?.username;
+let r2 = fetch<Product>("");
+r2.data?.title;
+
+//constraints
+function echo<T extends number | string | { name: string } | User>(
+  value: T
+): T {
+  return value;
+}
+// echo(true);
+
+//extending generic classes
+interface ProductS {
+  name: string;
+  price: number;
+}
+
+class Store<T> {
+  protected _objects: T[] = [];
+  add(obj: T): void {
+    this._objects.push(obj);
+  }
+  //T is ProductS
+  //keyof T => 'name' | 'price'
+  find(property: keyof T, value: unknown): T | undefined {
+    return this._objects.find((obj) => obj[property] === value);
+  }
+}
+
+//pass on the generic type parameter
+class CompressibleStore<T> extends Store<T> {
+  compress() {}
+}
+
+//an object that contains a prop name, restrictive
+class SearchableStore<T extends { name: string }> extends Store<T> {
+  find(name: string): T | undefined {
+    return this._objects.find((o) => o.name === name);
+  }
+}
+
+//fix the generic type parameter
+class ProductStore extends Store<ProductS> {
+  filterByCategory(category: string): ProductS[] {
+    return [];
+  }
+}
+
+let store1 = new Store<ProductS>();
+let store2 = new CompressibleStore<ProductS>();
+store1.add({ name: "a", price: 1 });
+store1.add({ name: "b", price: 2 });
+store1.add({ name: "c", price: 3 });
+store1.find("name", "a");
+// store1.find("nonExistingProperty", "a");
+
+//Type mapping
+type ReadOnlyObject<T> = {
+  //index signature
+  //keyof
+  readonly [Property in keyof T]: T[Property];
+};
+
+type OptionalObject<T> = {
+  [Property in keyof T]?: T[Property];
+};
+
+type NullableObject<T> = {
+  [Property in keyof T]: T[Property] | null;
+};
