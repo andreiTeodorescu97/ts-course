@@ -526,3 +526,6 @@ class Dog {
 }
 let dog1 = new Dog("a");
 console.log(dog1.password);
+
+//modules
+import { Lion, Bird } from "./animals";
